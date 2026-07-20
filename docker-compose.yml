@@ -20,14 +20,16 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        working-directory: ./web
         run: |
+          cd web
           python -m pip install --upgrade pip
+          ls -la
           pip install --no-cache-dir -r requirements.txt pytest requests
 
       - name: Run Integration Tests
-        working-directory: ./web
-        run: python -m pytest tests/test_integration.py -v
+        run: |
+          cd web
+          python -m pytest tests/test_integration.py -v
 
       - name: Run OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
@@ -36,13 +38,7 @@ jobs:
           path: './web'
           format: 'HTML'
 
-      - name: Upload Dependency Check Report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dependency-check-report
-          path: ./web/reports
-
       - name: Run UI Tests over HTTP
-        working-directory: ./web
-        run: python -m pytest tests/test_ui_http.py -v
+        run: |
+          cd web
+          python -m pytest tests/test_ui_http.py -v
