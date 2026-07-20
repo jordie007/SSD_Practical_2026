@@ -8,7 +8,10 @@ on:
 
 jobs:
   test-and-scan:
-    runs-on: ubuntu-latest
+    # Self-hosted runner required: SonarQube runs locally via
+    # docker-compose on http://127.0.0.1:9000, which only a runner
+    # on this same machine can reach.
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -47,3 +50,28 @@ jobs:
       - name: Run UI Tests over HTTP
         working-directory: ./web
         run: python -m pytest tests/test_ui_http.py -v
+
+      - name: Set up Java (required by sonar-scanner CLI)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v4
+        env:
+          SONAR_HOST_URL: 'http://127.0.0.1:9000'
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: ./web
+          args: >
+            -Dsonar.projectKey=SSD-Practical
+            -Dsonar.sources=.
+            -Dsonar.host.url=http://127.0.0.1:9000
+
+      - name: SonarQube Quality Gate Check
+        uses: sonarsource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_HOST_URL: 'http://127.0.0.1:9000'
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
