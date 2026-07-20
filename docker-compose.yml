@@ -14,7 +14,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Show directory structure
+        run: |
+          ls -la
+          ls -la web/
+          ls -la web/tests/
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd web
+          pwd
+          ls -la
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt pytest requests
