@@ -1,43 +1,48 @@
-services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: web-server
-    working_dir: /app
-    volumes:
-      - ./web:/app
-    networks:
-      - appnet
-    ports:
-      - "8000:5000"
+name: SSD CI Pipeline
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - web
-    networks:
-      - appnet
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
-  sonarqube:
-    image: sonarqube:latest
-    ports:
-      - "9000:9000"
-    environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
-    networks:
-      - appnet
-    volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
+jobs:
+  test-and-scan:
+    runs-on: ubuntu-latest
 
-volumes:
-  sonarqube_data:
-  sonarqube_extensions:
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-networks:
-  appnet:
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: ./web
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt pytest requests
+
+      - name: Run Integration Tests
+        working-directory: ./web
+        run: python -m pytest tests/test_integration.py -v
+
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'SSD-Practical'
+          path: './web'
+          format: 'HTML'
+
+      - name: Upload Dependency Check Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: ./web/reports
+
+      - name: Run UI Tests over HTTP
+        working-directory: ./web
+        run: python -m pytest tests/test_ui_http.py -v
