@@ -15,7 +15,7 @@ def test_valid_password():
     
     try:
         strong_pass = "MySuperSecurePass12345!"
-        response = requests.post("http://localhost:8000", 
+        response = requests.post("http://localhost:5000", 
                             data={"password": strong_pass}, 
                             allow_redirects=True, 
                             timeout=5)
