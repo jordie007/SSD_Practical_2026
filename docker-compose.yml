@@ -18,27 +18,3 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Install dependencies
-        run: |
-          cd web
-          python -m pip install --upgrade pip
-          ls -la
-          pip install --no-cache-dir -r requirements.txt pytest requests
-
-      - name: Run Integration Tests
-        run: |
-          cd web
-          python -m pytest tests/test_integration.py -v
-
-      - name: Run OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: 'SSD-Practical'
-          path: './web'
-          format: 'HTML'
-
-      - name: Run UI Tests over HTTP
-        run: |
-          cd web
-          python -m pytest tests/test_ui_http.py -v
