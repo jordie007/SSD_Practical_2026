@@ -1,9 +1,25 @@
 import requests
-
-BASE_URL = "http://localhost:8000"
+import subprocess
+import time
+import os
 
 def test_valid_password():
-    strong_pass = "SuperSecurePass12345!"
-    response = requests.post(BASE_URL, data={"password": strong_pass}, allow_redirects=True)
-    assert response.status_code == 200
-    assert "Welcome" in response.text
+    process = subprocess.Popen(
+        ["python", "app.py"],
+        cwd=os.getcwd(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    
+    time.sleep(4)
+    
+    try:
+        strong_pass = "MySuperSecurePass12345!"
+        response = requests.post("http://localhost:8000", 
+                            data={"password": strong_pass}, 
+                            allow_redirects=True, 
+                            timeout=5)
+        assert response.status_code == 200
+        assert "Welcome" in response.text
+    finally:
+        process.terminate()
