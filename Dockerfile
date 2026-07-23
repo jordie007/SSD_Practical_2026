@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y git && \
 
 # Use --system so the config applies to all users (including the
 # non-root user below), since /etc/gitconfig is world-readable.
-RUN git config --system user.name "LimShangWeiBryan" && \
-    git config --system user.email "bryanlimshangwei@gmail.com"
+RUN git config --global user.name "LimShangWeiBryan" && \
+    git config --global user.email "bryanlimshangwei@gmail.com"
 
 COPY web/requirements.txt .
 
